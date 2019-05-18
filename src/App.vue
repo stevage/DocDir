@@ -3,11 +3,13 @@
         #top
             h1 DocDir
         #middle
-            #sidebar
+            #sidebar(v-show="!collapsed")
+                #toggle-buffer
                 PracticeFilter
                 ClinicInfo
             #map-container
                 Map
+            button#toggle(@click="toggle") Toggle sidebar
         //- #bottom
 </template>
 
@@ -22,6 +24,13 @@ export default {
       Map,
       PracticeFilter,
       ClinicInfo
+    }, data: () => ({
+        collapsed: false
+    }), methods: {
+        toggle() {
+            this.collapsed = !this.collapsed;
+            this.$nextTick(() => window.map.resize());
+        }
     }
 }
 </script>
@@ -57,6 +66,7 @@ html, body {
 #sidebar {
     flex-basis: 300px; /* Horizontally */
     border-right: 1px solid lightgrey;
+    overflow: scroll;
 }
 
 #map-container {
@@ -70,4 +80,28 @@ html, body {
     border-top: 1px solid lightgrey;
 }
 
+#toggle {
+    display: none;
+}
+
+@media (max-width: 500px) { 
+    #top {
+        display: none;
+    }
+
+    #toggle-buffer {
+        height: 30px;
+    }
+ 
+    #toggle {
+        display:block;
+        position: absolute;
+        top: 0px;
+        width: 120px;
+        height: 30px;
+        background: hsl(0,0%,95%);
+        border: none;
+        /* padding: 1em; */
+    }
+}
 </style>

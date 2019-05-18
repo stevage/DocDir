@@ -1,14 +1,16 @@
 <template lang="pug">
 #ClinicInfo(v-if="clinic['Name of clinic']")
     .name {{ clinic['Name of clinic'] }}
-    .code.L(v-if="clinic.L") L
-    .code.G(v-if="clinic.G") G
-    .code.B(v-if="clinic.B") B
-    .code.T(v-if="clinic.T") T
+    .codes
+        .code.L(v-if="clinic.L") L
+        .code.G(v-if="clinic.G") G
+        .code.B(v-if="clinic.B") B
+        .code.T(v-if="clinic.T") T
     table
         tr
             th Phone
-            td {{ clinic['Phone'] }}
+            td 
+                a(:href="'tel:' + clinic['Phone']") {{ clinic['Phone'] }}
         tr
             th Address
             td 
@@ -83,13 +85,14 @@ export default {
 }
 
 table {
-    margin: 1em 0;
-    padding: 0 1em;
+    margin: 0em 0;
+    padding: 0 0em;
     border: 1px solid lightgrey;
 
 }
-td,td {
+th,td {
     padding: 0 0.5em;
+    text-align:left;
 }
 
 td {
@@ -114,6 +117,9 @@ th {
     color: #444;
 }
 
+.codes {
+    margin: 1em;
+}
 .code {
     display: inline-block;
     border: 1px solid hsl(0,0%,30%);

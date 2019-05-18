@@ -70,25 +70,27 @@ export default {
             zoom: 12,
             style: 'mapbox://styles/mapbox/light-v9',
         });
-        U.init(map);
-        map.U.loadImage('clinic-marker', '/first-aid-kit.png');
-
         map.addControl(new MapboxGeocoder({
             accessToken: mapboxgl.accessToken,
             mapboxgl: mapboxgl,
             countries: 'au'
-        }));
+        }), 'top-right');
+
+        map.addControl(new mapboxgl.NavigationControl());
+
+        U.init(map);
+        map.U.loadImage('clinic-marker', '  first-aid-kit.png');
 
         window.map = map;
         window.Map = this;
 
-        axios.get('http://emscycletours.site44.com/QueerDoc/clinics.csv')
+        axios.get('https://emscycletours.site44.com/QueerDoc/clinics.csv')
         .then(csv => {
             this.clinics = d3.csvParse(csv.data);
             // this.clinics = csvToGeoJSON(d3.csvParse(csv.data));
         }).then(() => {
             // TODO load non-sequentially
-            return axios.get('http://emscycletours.site44.com/QueerDoc/doctors.csv')
+            return axios.get('https://emscycletours.site44.com/QueerDoc/doctors.csv')
         }).then(csv =>  {
             this.doctors = d3.csvParse(csv.data);
             processData();
