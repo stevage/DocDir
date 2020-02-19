@@ -7,7 +7,8 @@ import mapboxgl from 'mapbox-gl';
 import U from 'mapbox-gl-utils';
 import axios from 'axios';
 import MapboxGeocoder from 'mapbox-gl-geocoder';
-const d3 = require('d3-dsv');
+import { sheets2geojson } from 'sheets2geojson';
+const d3 = require('d3-fetch');
 
 
 function csvToGeoJSON(rows) {
@@ -17,7 +18,7 @@ function csvToGeoJSON(rows) {
             type: 'Feature',
             geometry: {
                 type: 'Point',
-                coordinates: [row.Lng, row.Lat]
+                coordinates: [row.Longitude, row.Latitude]
             },
             properties: row
         }))
@@ -62,7 +63,7 @@ function processData() {
 }
 
 export default {
-    mounted() {
+    async mounted() {
         mapboxgl.accessToken = 'pk.eyJ1Ijoic3RldmFnZSIsImEiOiJGcW03aExzIn0.QUkUmTGIO3gGt83HiRIjQw';
         const map = new mapboxgl.Map({
             container: 'map',
@@ -83,20 +84,16 @@ export default {
 
         window.map = map;
         window.Map = this;
+        const clinicsSheetsUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vStqC2_ia7DSyJth8w-pSawHIwxEQPhZgxDOFoXbbGFyS5pQoQe12Rk_SLszrJ6bK48BlA8DJ8RBKmi/pub?output=csv';
+        const doctorsSheetsUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT2NvY81Ds0S3S7rQEcGWqDzGm_k5GMy8XVbTksNtCcIBIQP98V2yU75zJzzlkV17lJwz-L1cwQiGn-/pub?output=csv';
+        console.log(d3.csv);
+        this.clinics = await d3.csv(clinicsSheetsUrl);
 
-        axios.get('https://emscycletours.site44.com/QueerDoc/clinics.csv')
-        .then(csv => {
-            this.clinics = d3.csvParse(csv.data);
-            // this.clinics = csvToGeoJSON(d3.csvParse(csv.data));
-        }).then(() => {
-            // TODO load non-sequentially
-            return axios.get('https://emscycletours.site44.com/QueerDoc/doctors.csv')
-        }).then(csv =>  {
-            this.doctors = d3.csvParse(csv.data);
-            processData();
-            map.U.onLoad(() => initMap(map));
+        this.doctors = await d3.csv(doctorsSheetsUrl);
+        // this.doctors = d3.csvParse(doctorsCsv.data);
+        processData();
+        map.U.onLoad(() => initMap(map));
 
-        });
     }, methods: {
         updateFilter(filter) {
             const f = [];
@@ -105,7 +102,7 @@ export default {
                     f.push(['==', ['get', field], true]);
                 }
             }
-            map.U.setFilter(['clinic-points', 'clinic-circle', 'clinic-code'], ['all', ...f]);
+            map.U.setFilter(['clinic-points', 'clinic-code'], ['all', ...f]);
         }
     }
 }
@@ -116,9 +113,6 @@ function initMap(map) {
         closeOnClick: false
     });
     map.U.addGeoJSON('clinics', csvToGeoJSON(Object.keys(clinicLookup).map(k => clinicLookup[k])));
-    // map.U.addCircle('clinic-circle', 'clinics', {
-    //     circleColor: 'red'
-    // });
     map.U.addSymbol('clinic-points', 'clinics', {
         iconImage: 'clinic-marker',
         iconSize: 0.05,
